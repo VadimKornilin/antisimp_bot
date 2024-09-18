@@ -1,0 +1,5 @@
+pandas
+numpy
+aiogram
+sqlalchemy
+psycopg2
