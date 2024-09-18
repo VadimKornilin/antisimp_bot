@@ -1,7 +1,4 @@
-import re
-from dateutil.parser import parse
-from datetime import datetime
-from database import db_insert
+from database import db_insert, db_validate
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command, CommandStart
@@ -17,7 +14,7 @@ from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.base import StorageKey
 
-from config import bot_token
+from config import bot_token, vadim_id
 
 
 bot = Bot(token=bot_token)
@@ -32,7 +29,7 @@ class FSMFillForm(StatesGroup):
     fill_simp_description = State()
     validate_simping = State()
 
-vadim_storage_key = StorageKey(bot.id, chat_id=812669559, user_id=812669559)
+vadim_storage_key = StorageKey(bot.id, chat_id=vadim_id, user_id=vadim_id)
 
 vadim_state = FSMContext(storage, key=vadim_storage_key)
 
@@ -106,7 +103,7 @@ async def other_date_income(message: Message, state: FSMContext):
     print(d)
     db_insert(d['user_id'], d['user_name'], d['dt'], d['subject'], d['object'], d['description'])
 
-    await bot.send_message(chat_id=812669559, 
+    await bot.send_message(chat_id=vadim_id, 
                            text=f'''
 Зафиксирован симпинг. Необходима валидация.
 Кто симпил: {d['subject']}
@@ -117,14 +114,22 @@ async def other_date_income(message: Message, state: FSMContext):
                            reply_markup=keyboard_val)
 
     await vadim_state.set_state(valid_state)
+    await vadim_state.set_data(d)
 
 
 @dp.message(StateFilter(valid_state))
 async def other_date_income(message: Message, state: FSMContext):
+    d = await vadim_state.get_data()
+    if message.text == 'Да':
+        valid = 1
+    else:
+        valid = 0
+    
+    db_validate(d['user_id'], d['user_name'], d['dt'], d['subject'], d['object'], d['description'], message.from_user.username, valid)
     await message.answer(text='Провалидировано')
     await state.set_state(default_state)
 
-    
+
 
 
 
