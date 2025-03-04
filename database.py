@@ -1,6 +1,6 @@
 import sqlalchemy as sqla
 import pandas as pd
-from config import postgres
+from config import remote_postgres as postgres
 
 def postgres_connection():
     engine = sqla.create_engine(
@@ -15,7 +15,7 @@ def db_select(query):
 def db_insert(user_id, user_name, dt, subject, object, description):
     
     txt = f"""
-    insert into antisimp.simpings (user_id, user_name, dt, subject, object, description)
+    insert into simpings (user_id, user_name, dt, subject, object, description)
     values
     ({user_id}, '{user_name}', '{dt}', '{subject}', '{object}', '{description}')
     """
@@ -28,7 +28,7 @@ def db_insert(user_id, user_name, dt, subject, object, description):
 
 def db_validate(user_id, user_name, dt, subject, object, description, validator, is_validated):
     txt = f"""
-    update antisimp.simpings
+    update simpings
     set validator = '{validator}',
     is_validated = '{is_validated}'
     where 
